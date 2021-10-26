@@ -72,12 +72,12 @@ public class ServerTest {
                                         oos.writeObject(join);
                                     }   
                                     else{
-                                        oos.writeObject("Phòng đầy");
+                                        oos.writeObject("Full");
                                     }
                                     
                                 }
                                 else{
-                                    oos.writeObject("Phòng không tồn tại");
+                                    oos.writeObject("Not found");
                                 }
                                 
                             }

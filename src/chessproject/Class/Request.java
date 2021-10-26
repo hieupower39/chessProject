@@ -13,7 +13,7 @@ import java.io.Serializable;
  */
 public class Request implements Serializable{
     private Player player;
-    private String request;
+    private String request, data;
     private int roomIndex;
     private int port;
 
@@ -33,6 +33,12 @@ public class Request implements Serializable{
         this.request = request;
         this.roomIndex = roomIndex;
     }
+
+    public Request(String request, String data) {
+        this.request = request;
+        this.data = data;
+    }
+    
     
     
     public Player getPlayer() {
@@ -50,5 +56,11 @@ public class Request implements Serializable{
     public int getPort() {
         return port;
     }
+
+    public String getData() {
+        return data;
+    }
+    
+    
     
 }

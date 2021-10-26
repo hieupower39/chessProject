@@ -5,9 +5,13 @@
  */
 package chessproject.GUI;
 
+import chessproject.Class.FullRoomException;
+import chessproject.Class.NotFoundRoomException;
 import chessproject.Class.Room;
 import chessproject.Class.Player;
 import chessproject.Class.Request;
+import chessproject.Class.RoomHandling;
+import chessproject.Class.ClientHandling;
 import chessproject.ServerInformation;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -31,15 +35,15 @@ public class RoomListGUI extends javax.swing.JFrame implements WindowListener{
     /**
      * Creates new form RoomListGUI
      */
-    private Socket socket;
-    private ObjectOutputStream oos;
-    private ObjectInputStream ois;
 
+  
+    private RoomHandling roomHandling;
+    
+    
     public RoomListGUI() throws IOException {
         initComponents();
-        socket = new Socket(ServerInformation.getServerHost(), ServerInformation.getServerPort());
-        oos = new ObjectOutputStream(socket.getOutputStream());
-        ois = new ObjectInputStream(socket.getInputStream());
+        roomHandling = new RoomHandling(ServerInformation.getServerHost(), ServerInformation.getServerPort());
+        
         this.addWindowListener(this);
     }
   
@@ -167,7 +171,7 @@ public class RoomListGUI extends javax.swing.JFrame implements WindowListener{
             // TODO add your handling code here:
             String name = nickNametxt.getText();
             int port = ServerInformation.getClientPort();
-            oos.writeObject(new Request(new Player(name, this.socket.getInetAddress().getHostAddress()),"HOST", port+""));
+            roomHandling.roomHost(name, port);
             WaitRoomGUI waitRoom = new WaitRoomGUI(this, name, port);
             waitRoom.setName1(nickNametxt.getText());
             waitRoom.setVisible(true);
@@ -186,22 +190,18 @@ public class RoomListGUI extends javax.swing.JFrame implements WindowListener{
             int index = roomTable.getSelectedRow();
             int roomIndex = (int) roomTable.getModel().getValueAt(index, 0);
             System.out.println(roomIndex);
-            oos.writeObject(new Request(new Player(name, this.socket.toString()),"JOIN", roomIndex));
-            Object object =  ois.readObject();
-            if(object instanceof Room){
-                Room room = (Room) object;
-                WaitRoomGUI waitRoom = new WaitRoomGUI(this, room.getHost().getAddress(), name, room.getPort());
-                waitRoom.setName1(room.getHost().getName());
-                waitRoom.setName2(nickNametxt.getText());
-                waitRoom.setVisible(true);
-                this.dispose();
-            }
-            else{
-                JOptionPane.showMessageDialog(this, object);
-                
-            }
-        } catch (Exception ex) {
-            
+            Room room = roomHandling.roomJoin(name, roomIndex);
+            WaitRoomGUI waitRoom = new WaitRoomGUI(this, room.getHost().getAddress(), name, room.getPort());
+            waitRoom.setName1(room.getHost().getName());
+            waitRoom.setName2(nickNametxt.getText());
+            waitRoom.setVisible(true);
+            this.setVisible(false);
+        } catch (FullRoomException ex) {
+            JOptionPane.showMessageDialog(rootPane, "Phòng đầy");
+        } catch (IOException ex) {
+        } catch (ClassNotFoundException ex) {
+        } catch (NotFoundRoomException ex) {
+            JOptionPane.showMessageDialog(rootPane, "Phòng không tồn tại");
         }
     }//GEN-LAST:event_joinButtonActionPerformed
 
@@ -217,8 +217,7 @@ public class RoomListGUI extends javax.swing.JFrame implements WindowListener{
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
         try {
-            sendRequest(new Request("CLOSE"));
-            socket.close();
+            roomHandling.close();
             new MenuGUI().setVisible(true);
             this.dispose();
             
@@ -282,15 +281,22 @@ public class RoomListGUI extends javax.swing.JFrame implements WindowListener{
     }
     
     public void refreshData() throws IOException, ClassNotFoundException {
-        sendRequest(new Request("REFRESH"));
-            Object object = ois.readObject();
-            if(object instanceof ArrayList){
-                ArrayList listRoom = (ArrayList) object;
-                updateRoomTable(listRoom);
-                System.out.println(listRoom.size());
-            }
+        try{
+            ArrayList listRoom = roomHandling.roomRefresh();
+            updateRoomTable(listRoom);
+            System.out.println(listRoom.size());
+        } catch(Exception ex){
+            
+        }
     }
     
+    public void closeRoom() throws IOException{
+        roomHandling.roomClose();
+    }
+    
+    public void outRoom() throws IOException{
+        roomHandling.roomOut();
+    }
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -311,8 +317,7 @@ public class RoomListGUI extends javax.swing.JFrame implements WindowListener{
     @Override
     public void windowClosing(WindowEvent e) {
         try {
-            sendRequest(new Request("CLOSE"));
-            socket.close();
+            roomHandling.close();
         } catch (IOException ex) {
             
         }
@@ -338,10 +343,4 @@ public class RoomListGUI extends javax.swing.JFrame implements WindowListener{
     @Override
     public void windowDeactivated(WindowEvent e) {
     }
-
-    public void sendRequest(Request request) throws IOException {
-        oos.writeObject(request);    
-    }
-        
-    
 }

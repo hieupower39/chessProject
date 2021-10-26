@@ -5,6 +5,7 @@
  */
 package chessproject.GUI;
 
+import chessproject.Class.JoinHandling;
 import chessproject.GUI.RoomListGUI;
 import chessproject.Class.Request;
 import java.awt.event.WindowEvent;
@@ -12,6 +13,8 @@ import java.awt.event.WindowListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -27,11 +30,11 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
      * Creates new form WaitRoomGUI
      */
     //private ServerSocket server;
-    private Socket client;
+    private JoinHandling join;
     private String name;
     private ServerSocket server;
-    private DataInputStream dis;
-    private DataOutputStream dos; 
+    private ObjectInputStream dis;
+    private ObjectOutputStream dos; 
     private RoomListGUI parent;
     public WaitRoomGUI(RoomListGUI parent, String name, int port) throws IOException {
         //Start a host room
@@ -182,15 +185,15 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
         try {
             // TODO add your handling code here:
             server.close();
-            parent.sendRequest(new Request("CLOSEROOM"));
+            parent.closeRoom();
             
         } catch (Exception ex) {
             
         } 
         try{
-            this.dos.writeUTF("OUT");
-            client.close();
-            parent.sendRequest(new Request("OUT"));
+            join.out();
+            parent.outRoom();
+            
             
         } catch (Exception ex) {
             
@@ -250,14 +253,18 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
                 public void run() {
                     try {
                         while(true){
-                            client = server.accept();
-                            dis = new DataInputStream(client.getInputStream());
-                            dos = new DataOutputStream(client.getOutputStream());
-                            player2Name.setText(dis.readUTF()); 
+                            Socket client = server.accept();
+                            dis = new ObjectInputStream(client.getInputStream());
+                            dos = new ObjectOutputStream(client.getOutputStream());
+                            
+                            Request request = (Request) dis.readObject(); 
+                            if(request.getRequest().equals("DATA")){
+                                player2Name.setText(request.getData());
+                            }
                             setVisible(true);
                             while(!client.isClosed()){
-                                String request = dis.readUTF();
-                                if(request.equals("OUT")){
+                                request =  (Request) dis.readObject();
+                                if(request.getRequest().equals("OUT")){
                                     player2Name.setText("Player 2"); 
                                     setVisible(true);
                                     client.close();
@@ -268,6 +275,8 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
 
                     } catch (IOException ex) {
                         
+                    } catch (ClassNotFoundException ex) {
+                        Logger.getLogger(WaitRoomGUI.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             });
@@ -275,14 +284,12 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
     }
     
     private void initJoinRoom(String host, String name, int port) throws IOException{
-        client = new Socket(host,port);
-        dos = new DataOutputStream(client.getOutputStream());
-        dis = new DataInputStream(client.getInputStream());
+        join = new JoinHandling(host, port);
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    dos.writeUTF(name);
+                    join.sendData(name);
                 } catch (IOException e) {
                     
                 }
@@ -312,7 +319,7 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
         
         try {
             server.close();
-            parent.sendRequest(new Request("CLOSE"));
+            parent.windowClosing(e);
         } catch (IOException ex) {
             
         }
