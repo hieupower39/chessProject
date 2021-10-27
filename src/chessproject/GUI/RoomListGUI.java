@@ -10,7 +10,7 @@ import chessproject.Class.NotFoundRoomException;
 import chessproject.Class.Room;
 import chessproject.Class.Player;
 import chessproject.Class.Request;
-import chessproject.Class.RoomHandling;
+import chessproject.Class.ClientRoomHandling;
 import chessproject.Class.ClientHandling;
 import chessproject.ServerInformation;
 import java.awt.event.WindowEvent;
@@ -37,12 +37,12 @@ public class RoomListGUI extends javax.swing.JFrame implements WindowListener{
      */
 
   
-    private RoomHandling roomHandling;
-    
+    private ClientRoomHandling roomHandling;
+    private WaitRoomGUI waitRoom;
     
     public RoomListGUI() throws IOException {
         initComponents();
-        roomHandling = new RoomHandling(ServerInformation.getServerHost(), ServerInformation.getServerPort());
+        roomHandling = new ClientRoomHandling(ServerInformation.getServerHost(), ServerInformation.getServerPort());
         
         this.addWindowListener(this);
     }
@@ -189,9 +189,10 @@ public class RoomListGUI extends javax.swing.JFrame implements WindowListener{
             String name = nickNametxt.getText();
             int index = roomTable.getSelectedRow();
             int roomIndex = (int) roomTable.getModel().getValueAt(index, 0);
-            System.out.println(roomIndex);
             Room room = roomHandling.roomJoin(name, roomIndex);
-            WaitRoomGUI waitRoom = new WaitRoomGUI(this, room.getHost().getAddress(), name, room.getPort());
+            
+            waitRoom = new WaitRoomGUI(this, room.getHost().getAddress(), name, room.getPort());
+            System.out.println(room.getRoomIndex());
             waitRoom.setName1(room.getHost().getName());
             waitRoom.setName2(nickNametxt.getText());
             waitRoom.setVisible(true);
@@ -292,10 +293,19 @@ public class RoomListGUI extends javax.swing.JFrame implements WindowListener{
     
     public void closeRoom() throws IOException{
         roomHandling.roomClose();
+        waitRoom = null;
     }
     
     public void outRoom() throws IOException{
         roomHandling.roomOut();
+        waitRoom = null;
+    }
+    
+    public void outRoom(String message) throws IOException{
+        
+        roomHandling.roomOut();
+        JOptionPane.showMessageDialog(rootPane, message);
+        waitRoom = null;
     }
     
 

@@ -5,9 +5,9 @@
 package chessproject.Class;
 
 /**
- *
- * @author hieup
+    * @author hieup
+    * This exception is thrown when the server receives a null room returned.
  */
 public class NotFoundRoomException extends Exception {
-    
+
 }

@@ -14,9 +14,9 @@ import java.util.ArrayList;
  *
  * @author hieup
  */
-public class RoomHandling extends ClientHandling{
+public class ClientRoomHandling extends ClientHandling{
 
-    public RoomHandling(String host, int port) throws IOException {
+    public ClientRoomHandling(String host, int port) throws IOException {
         super(host, port);
     }
     
@@ -30,7 +30,7 @@ public class RoomHandling extends ClientHandling{
             (name, this.socket.getInetAddress().getHostAddress()),"HOST", port+""));
     }
     
-    public Room roomJoin(String name, int roomIndex) throws IOException, ClassNotFoundException, FullRoomException, NotFoundRoomException{
+    public Room roomJoin(String name, int roomIndex) throws IOException, ClassNotFoundException, FullRoomException, NotFoundRoomException, Exception{
         Room room = null;
         this.sendRequest(new Request(new Player
             (name, this.socket.getInetAddress().getHostAddress()), "JOIN", roomIndex));
@@ -39,12 +39,7 @@ public class RoomHandling extends ClientHandling{
             room = (Room) object;
         }
         else{
-            if(object.equals("Full")){
-                throw new FullRoomException();
-            }
-            else{
-                throw new NotFoundRoomException();
-            }
+            throw (Exception) object;
         }
         return room;
     }

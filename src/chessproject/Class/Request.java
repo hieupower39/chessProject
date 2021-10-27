@@ -61,6 +61,9 @@ public class Request implements Serializable{
         return data;
     }
     
-    
+    @Override
+    public String toString() {
+        return request;
+    }
     
 }

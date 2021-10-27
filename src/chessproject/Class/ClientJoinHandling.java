@@ -10,9 +10,9 @@ import java.io.IOException;
  *
  * @author hieup
  */
-public class JoinHandling extends ClientHandling{
+public class ClientJoinHandling extends ClientHandling{
 
-    public JoinHandling(String host, int port) throws IOException {
+    public ClientJoinHandling(String host, int port) throws IOException {
         super(host, port);
     }
     
@@ -22,9 +22,7 @@ public class JoinHandling extends ClientHandling{
     
     public void out() throws IOException{
         this.sendRequest(new Request("OUT") );
+        this.socket.close();
     }
     
-    public Request recieveRequest(){
-        return this.recieveRequest();
-    }
 }

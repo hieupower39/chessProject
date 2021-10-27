@@ -5,7 +5,8 @@
  */
 package chessproject.GUI;
 
-import chessproject.Class.JoinHandling;
+import chessproject.Class.ClientHostHandling;
+import chessproject.Class.ClientJoinHandling;
 import chessproject.GUI.RoomListGUI;
 import chessproject.Class.Request;
 import java.awt.event.WindowEvent;
@@ -30,12 +31,12 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
      * Creates new form WaitRoomGUI
      */
     //private ServerSocket server;
-    private JoinHandling join;
+    private ClientJoinHandling join;
     private String name;
     private ServerSocket server;
-    private ObjectInputStream dis;
-    private ObjectOutputStream dos; 
     private RoomListGUI parent;
+    private ClientHostHandling host;
+
     public WaitRoomGUI(RoomListGUI parent, String name, int port) throws IOException {
         //Start a host room
         this.parent=parent;
@@ -182,10 +183,17 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
     }//GEN-LAST:event_jButton6ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        try{
+            host.close();
+            
+        } catch (Exception ex) {
+            
+        }
         try {
             // TODO add your handling code here:
-            server.close();
+            
             parent.closeRoom();
+            server.close();
             
         } catch (Exception ex) {
             
@@ -253,23 +261,19 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
                 public void run() {
                     try {
                         while(true){
-                            Socket client = server.accept();
-                            dis = new ObjectInputStream(client.getInputStream());
-                            dos = new ObjectOutputStream(client.getOutputStream());
+                            host = new ClientHostHandling(server, server.accept());
                             
-                            Request request = (Request) dis.readObject(); 
+                            Request request = (Request) host.receiveData(); 
                             if(request.getRequest().equals("DATA")){
                                 player2Name.setText(request.getData());
                             }
                             setVisible(true);
-                            while(!client.isClosed()){
-                                request =  (Request) dis.readObject();
-                                if(request.getRequest().equals("OUT")){
-                                    player2Name.setText("Player 2"); 
-                                    setVisible(true);
-                                    client.close();
-                                }
+                            
+                            while(!host.getIsOut()){
+                                requestHandling(host);
+                                
                             }
+                            System.out.println("Người chơi đã thoát");
                         }
                         
 
@@ -284,19 +288,53 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
     }
     
     private void initJoinRoom(String host, String name, int port) throws IOException{
-        join = new JoinHandling(host, port);
+        System.out.println("ok");
+        join = new ClientJoinHandling(host, port);
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     join.sendData(name);
-                } catch (IOException e) {
+                    while(true){
+                        requestHandling(join);
+                    }
+                } catch (IOException | ClassNotFoundException e) {
                     
                 }
             }
+
+           
         });
         thread.start();
     }
+    
+     private void requestHandling(ClientJoinHandling join) throws IOException, ClassNotFoundException {
+         Request request = (Request) join.receiveResult();
+         System.out.println(request);
+         switch(request.getRequest()){
+             case "CLOSEROOM":
+                join.sendData("Ok");
+                join.out();
+                parent.outRoom("Phòng đã đóng");
+                parent.setVisible(true);
+                this.dispose();
+                break;
+         }
+    
+     }
+     
+     private void requestHandling(ClientHostHandling host) throws IOException, ClassNotFoundException {
+         Request request = (Request) host.receiveData();
+         System.out.println(request);
+         switch(request.getRequest()){
+             case "OUT":
+                player2Name.setText("Player 2"); 
+                setVisible(true);
+                host.setIsOut(true);
+                
+                break;
+            }
+     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;

@@ -5,8 +5,8 @@
 package chessproject.Class;
 
 /**
- *
- * @author hieup
+    * @author hieup
+    * This exception is thrown when the server receives a room returned which have status is false
  */
 public class FullRoomException extends Exception{
     

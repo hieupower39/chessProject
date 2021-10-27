@@ -8,17 +8,20 @@ package chessproject.Class;
 import java.io.Serializable;
 
 /**
- *
- * @author hieup
+    * @author hieup
+    * This class store the information of a player 
  */
 public class Player implements Serializable{
-    private String name, address;
+    private final String name; //Name of this player
+    private final String address; //The IP address of this player
 
+    //Contructor method
     public Player(String name, String address) {
         this.name = name;
         this.address = address;
     }
 
+    //Get method
     public String getName() {
         return name;
     }

@@ -33,7 +33,8 @@ public class ClientHandling {
         output.writeObject(request);
     }
     
-    protected Object receiveResult() throws IOException, ClassNotFoundException{
+    
+    public Object receiveResult() throws IOException, ClassNotFoundException{
         return input.readObject();
     }
     
