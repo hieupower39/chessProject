@@ -9,11 +9,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 
 /**
     * @author hieup
-    * This class handle the receive and send data between the client and server.
+    * This class handles the receive and send data between the client and server. 
+    * Using on server side.
 */
 public class ServerHandling {
     protected ServerSocket server; //The server need to handling
@@ -35,7 +35,7 @@ public class ServerHandling {
         output.writeObject(object);
     }
     
-    //The sendData method help return the object which the accepted client sent
+    //The receiveData method help return the object which the accepted client sent
     public Object receiveData() throws IOException, ClassNotFoundException{
         return input.readObject();
     }

@@ -7,43 +7,31 @@ package chessproject.GUI;
 
 import chessproject.Class.ClientHostHandling;
 import chessproject.Class.ClientJoinHandling;
-import chessproject.GUI.RoomListGUI;
 import chessproject.Class.Request;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  *
  * @author hieup
  */
-public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
-
+public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{ 
+    private ServerSocket server; //The server if this is a host room.
+    private final RoomListGUI parent; //The parent will help you in some action of room.
+    private ClientJoinHandling join; //The handling if you are client.
+    private ClientHostHandling host; //The handling if you are host.
+    
     /**
      * Creates new form WaitRoomGUI
      */
-    //private ServerSocket server;
-    private ClientJoinHandling join;
-    private String name;
-    private ServerSocket server;
-    private RoomListGUI parent;
-    private ClientHostHandling host;
-
+    
     public WaitRoomGUI(RoomListGUI parent, String name, int port) throws IOException {
         //Start a host room
         this.parent=parent;
-        initHostRoom(name, port);
+        initHostRoom(port);
         initComponents();
         this.setVisible(true);
-        this.parent.setVisible(false);
         this.addWindowListener(this);
     }
     
@@ -53,6 +41,7 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
         initJoinRoom(host, name, port);
         initComponents();
         this.setVisible(true);
+        this.addWindowListener(this);
     }
 
     /**
@@ -68,7 +57,7 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
         player1Name = new javax.swing.JFormattedTextField();
         player2Name = new javax.swing.JFormattedTextField();
         jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        exitButton = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
         jButton5 = new javax.swing.JButton();
         jButton6 = new javax.swing.JButton();
@@ -94,10 +83,10 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
             }
         });
 
-        jButton3.setText("Thoát");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        exitButton.setText("Thoát");
+        exitButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                exitButtonActionPerformed(evt);
             }
         });
 
@@ -124,7 +113,7 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jButton2)
                         .addGap(18, 18, 18)
-                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(exitButton, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(35, 35, 35)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -160,16 +149,17 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
                     .addComponent(jButton4))
                 .addGap(24, 24, 24)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton3)
+                    .addComponent(exitButton)
                     .addComponent(jButton2))
                 .addContainerGap())
         );
 
-        jButton3.getAccessibleContext().setAccessibleName("Exit");
+        exitButton.getAccessibleContext().setAccessibleName("Exit");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    //Action Event handling
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -182,79 +172,46 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton6ActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
+        //When user click on Exit button
         try{
+            //Try to close the host if you are hosting and this room have a client in side.
             host.close();
-            
-        } catch (Exception ex) {
-            
+        } catch (Exception ex) {    
         }
         try {
-            // TODO add your handling code here:
-            
+            //Try to close the room if you are the hosting and close server
             parent.closeRoom();
             server.close();
-            
-        } catch (Exception ex) {
-            
+        } catch (Exception ex) {   
         } 
         try{
+            //Try to out the room if you are client.
             join.out();
             parent.outRoom();
-            
-            
-        } catch (Exception ex) {
-            
+        } catch (Exception ex) {  
         }
+        //Finally display the parent was disbled (RoomListGUI) and close this window.
         parent.setVisible(true);
         this.dispose();
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }//GEN-LAST:event_exitButtonActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(WaitRoomGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(WaitRoomGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(WaitRoomGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(WaitRoomGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                //new WaitRoomGUI().setVisible(true);
-            }
-        });
-    }
-
+    //Set method
     public void setName1(String name) {
-        this.name = name;
         player1Name.setText(name);
     }
     public void setName2(String name) {
-        this.name = name;
         player2Name.setText(name);
     }
     
-    private void initHostRoom(String name, int port) throws IOException{
+    //Private method
+    private void initHostRoom(int port) throws IOException{
+        /*
+            This method will be called if you are the hosting:
+                First, open the server with the port parameter.
+                Then, wait for a client joined this room.
+                Finally, wait for the client's requests util the client disconnects.
+        */
         server = new ServerSocket(port);
         Thread thread = new Thread(new Runnable() {
                 @Override
@@ -262,25 +219,17 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
                     try {
                         while(true){
                             host = new ClientHostHandling(server, server.accept());
-                            
+                            //Take and display the player 2 name from the client first.
                             Request request = (Request) host.receiveData(); 
                             if(request.getRequest().equals("DATA")){
-                                player2Name.setText(request.getData());
+                                player2Name.setText(request.getData()); 
                             }
                             setVisible(true);
-                            
                             while(!host.getIsOut()){
-                                requestHandling(host);
-                                
+                                requestHandling(host); //Wait and handle all client's requests.
                             }
-                            System.out.println("Người chơi đã thoát");
                         }
-                        
-
-                    } catch (IOException ex) {
-                        
-                    } catch (ClassNotFoundException ex) {
-                        Logger.getLogger(WaitRoomGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IOException | ClassNotFoundException ex) {   
                     }
                 }
             });
@@ -288,7 +237,12 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
     }
     
     private void initJoinRoom(String host, String name, int port) throws IOException{
-        System.out.println("ok");
+        /*
+            This method will be called if you are client:
+                First, make a connection with the server of the room which you just joined.
+                Then, send your name to the hosting.
+                Finally, wait for the server's requests util the room is closed.
+        */
         join = new ClientJoinHandling(host, port);
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -298,75 +252,74 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
                     while(true){
                         requestHandling(join);
                     }
-                } catch (IOException | ClassNotFoundException e) {
-                    
+                } catch (IOException | ClassNotFoundException e) {    
                 }
-            }
-
-           
+            } 
         });
         thread.start();
     }
-    
+     
+     private void requestHandling(ClientHostHandling host) throws IOException, ClassNotFoundException {
+        //This method will take the request from the client, check what type it is and handles it by the ClientHostHandling.
+        Request request = (Request) host.receiveData();
+        System.out.println(request);
+        switch(request.getRequest()){
+            case "OUT" -> {
+                //If request is OUT remove name of that client and wait for a new connection.
+                player2Name.setText("Player 2");
+                setVisible(true);
+                host.setIsOut(true);
+            }
+         }
+     }
+     
      private void requestHandling(ClientJoinHandling join) throws IOException, ClassNotFoundException {
-         Request request = (Request) join.receiveResult();
-         System.out.println(request);
-         switch(request.getRequest()){
-             case "CLOSEROOM":
-                join.sendData("Ok");
+         //This method will take the request from the hosting, check what type it is and handles it by the ClientJoinHandling.
+        Request request = (Request) join.receiveResult();
+        System.out.println(request);
+        switch(request.getRequest()){
+            case "CLOSEROOM" -> {
+                /*
+                    If the request is CLOSEROOM you the join will handle to close the connection with this room.
+                    The parent will handle to exit this room, close this window and display the parent (RoomListGUI).
+                */
                 join.out();
                 parent.outRoom("Phòng đã đóng");
                 parent.setVisible(true);
                 this.dispose();
-                break;
+            }
          }
-    
      }
      
-     private void requestHandling(ClientHostHandling host) throws IOException, ClassNotFoundException {
-         Request request = (Request) host.receiveData();
-         System.out.println(request);
-         switch(request.getRequest()){
-             case "OUT":
-                player2Name.setText("Player 2"); 
-                setVisible(true);
-                host.setIsOut(true);
-                
-                break;
-            }
-     }
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JFormattedTextField player1Name;
-    private javax.swing.JFormattedTextField player2Name;
-    // End of variables declaration//GEN-END:variables
-
+    //Override method of the WindowListener
+    @Override
+    public void windowClosing(WindowEvent e) {
+        //When you close this window
+        try{
+            //Try to close the host if you are hosting and this room have a client in side.
+            host.close();
+        } catch (Exception ex) {    
+        }
+        try {
+            //Try to close the room if you are the hosting and close server
+            parent.closeRoom();
+            server.close();
+        } catch (Exception ex) {   
+        } 
+        try{
+            //Try to out the room if you are client.
+            join.out();
+            parent.outRoom();
+        } catch (Exception ex) {  
+        }
+    }
+    
     @Override
     public void windowOpened(WindowEvent e) {
     }
 
     @Override
-    public void windowClosing(WindowEvent e) {
-        
-        try {
-            server.close();
-            parent.windowClosing(e);
-        } catch (IOException ex) {
-            
-        }
-        
-    }
-
-    @Override
-    public void windowClosed(WindowEvent e) {
-       
+    public void windowClosed(WindowEvent e) { 
     }
 
     @Override
@@ -384,4 +337,16 @@ public class WaitRoomGUI extends javax.swing.JFrame implements WindowListener{
     @Override
     public void windowDeactivated(WindowEvent e) {
     }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton exitButton;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
+    private javax.swing.JButton jButton6;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JFormattedTextField player1Name;
+    private javax.swing.JFormattedTextField player2Name;
+    // End of variables declaration//GEN-END:variables
 }

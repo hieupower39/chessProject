@@ -8,15 +8,17 @@ package chessproject.Class;
 import java.io.Serializable;
 
 /**
- *
- * @author hieup
+    * @author hieup
+    * This class stores the information of the request.
  */
 public class Request implements Serializable{
-    private Player player;
-    private String request, data;
-    private int roomIndex;
-    private int port;
+    private Player player; //The information of the player request.
+    private final String request; //The request type
+    private String data; //The string data of the request
+    private int roomIndex; // The room identified of the request
+    private int port; //The port player want to host
 
+    //Constructor method
     public Request(String request) {
         this.request = request;
     }
@@ -39,8 +41,7 @@ public class Request implements Serializable{
         this.data = data;
     }
     
-    
-    
+    //Get method
     public Player getPlayer() {
         return player;
     }
@@ -61,6 +62,7 @@ public class Request implements Serializable{
         return data;
     }
     
+    //Override method
     @Override
     public String toString() {
         return request;

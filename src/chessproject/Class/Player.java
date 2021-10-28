@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 /**
     * @author hieup
-    * This class store the information of a player 
+    * This class stores the information of a player 
  */
 public class Player implements Serializable{
     private final String name; //Name of this player

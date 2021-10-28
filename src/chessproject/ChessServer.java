@@ -15,55 +15,54 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author hieup
+    * @author hieup
+    * Main server run
  */
 public class ChessServer {
-
-    /**
-     * @param args the command line arguments
-     */
-    
-    static ArrayList <Socket> listClient = new ArrayList();
-    static ArrayList <Room> listRoom = new ArrayList();
+    static ArrayList <Socket> listClient = new ArrayList();// A list of clients is availible
+    static ArrayList <Room> listRoom = new ArrayList();// A list of rooms which clients hosted
     static ServerSocket server;
     
     
     public static void main(String[] args) throws IOException {
         server = new ServerSocket(ServerInformation.getServerPort());
         while(true){
-            //Server always listen and accept client each client server create a new thread to handling it
+            //Server always listen and accept client each client server create a new thread to handle it
             createClientThread(server.accept());
         }
     }
 
     //Static method for server
     
-    private static void createClientThread(Socket accept) throws IOException {
+    private static void createClientThread(Socket client) throws IOException {
         //This method create and a new thread to handling requests from client
-        ServerRoomHandling roomHandling = new ServerRoomHandling (server, accept);
+        ServerRoomHandling roomHandling = new ServerRoomHandling (server, client);
         Thread process = new Thread(new Runnable(){
             @Override
             public void run() {
-                while(!accept.isClosed()){
+                /*
+                    If the connection to the client is closed the loop will end. 
+                    Else call the requestHandling to handle the request from client.
+                */
+                while(!client.isClosed()){
                     try {
-                        requestHandling(roomHandling);
+                        requestHandle(roomHandling);
                     } catch (IOException | ClassNotFoundException ex) {
                         
                     }
                 }
-                System.out.println("Connection is close");
             }
             
         });
         process.start();
     }
     
-    private static void requestHandling(ServerRoomHandling roomHandling) throws IOException, ClassNotFoundException{
-        Request request = (Request) roomHandling.receiveData();
+    //requestHandle function will take the request from the client, check what type it is and handles it by the roomHandling.
+    private static void requestHandle(ServerRoomHandling roomHandling) throws IOException, ClassNotFoundException{
+        Request request = (Request) roomHandling.receiveData(); //Get request from the client
         System.out.println(request);
         switch(request.getRequest()){
-            case "HOST":
+            case "HOST": 
                 roomHandling.hostRoom(listRoom, request.getPlayer(), request.getPort());
                 break;
             case "REFRESH":

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 /**
     * @author hieup
-    * This class handle the action of client which is related to the rooms.
+    * This class handles the action of client which is related to the rooms.
  */
 public class ServerRoomHandling extends ServerHandling{
     private Room host; //This is the room which client create. 

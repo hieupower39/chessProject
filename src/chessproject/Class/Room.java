@@ -5,13 +5,10 @@
  */
 package chessproject.Class;
 
-import chessproject.Class.Player;
 import java.io.Serializable;
-import java.net.Socket;
-
 /**
     * @author hieup
-    * This class storage the information of a room and handle some action in a room
+    * This class stores the information of a room and handle some action in a room
  */
 public class Room implements Serializable{
     private Player host; //The player hosted the room.

@@ -9,24 +9,28 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
- *
- * @author hieup
+    * @author hieup
+    * This class handles the action of hosting which is related to the host room.
  */
 public class ClientHostHandling extends ServerHandling{
-    private Boolean isOut = false;
+    private Boolean isOut = false; //A checker if the client was out the room
     
+    //Construct method extends from class ServerHandling
     public ClientHostHandling(ServerSocket server, Socket socket) throws IOException {
         super(server, socket);
     }
-
+    
+    //This method help send request to client that the room is closing.
     public void close() throws IOException {
         this.sendData(new Request("CLOSEROOM"));
     }
-
+    
+    //Get method
     public Boolean getIsOut() {
         return isOut;
     }
 
+    //Set method
     public void setIsOut(Boolean isOut) {
         this.isOut = isOut;
     }

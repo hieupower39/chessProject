@@ -15,29 +15,40 @@ import java.net.UnknownHostException;
 
 
 /**
- *
- * @author hieup
+    * @author hieup
  */
 public class ServerInformation {
+    
+        
+    //This class only have static function
+    private ServerInformation(){
+        
+    }
+    /*
+        getServerPort function return the defaut port 2207 to server side.
+        You can change the port at here if this port isn't available on your network.
+    */
     public static int getServerPort(){
         return 2207;
     }
-
+    
+    /*
+        getServerHost function return the host name of the server.
+        You can change the host name if you host the server on another hosting.
+    */
     public static String getServerHost() throws UnknownHostException{
         return InetAddress.getLocalHost().getHostAddress();
     }
     
+    //getClientPort function return the open TCP port.
     public static int getClientPort() throws IOException{
         int port;
         for(port = 2208; port <= 65535; port++){
             try{
-                //DatagramSocket serverUDP = new DatagramSocket(port);
-                //serverUDP.close();
                 ServerSocket serverTCP = new ServerSocket(port);
                 serverTCP.close();
                 return port;
             } catch(SocketException ex){
-                //System.out.println("There is a server on: "+port);
             }
         }
                 
